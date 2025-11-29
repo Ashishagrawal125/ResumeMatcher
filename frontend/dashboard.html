@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dashboard – ResumeMatch</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="assets/style.css" />
+  <script src="assets/app.js" defer></script>
+</head>
+<body class="body-light">
+
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-logo">RP</div>
+        <div>
+          <div class="brand-name">ResumeMatch</div>
+          <div class="sidebar-tagline">AI Hiring Assistant</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a class="sidebar-link active">Dashboard</a>
+        <a class="sidebar-link disabled">Candidates</a>
+        <a class="sidebar-link disabled">Interviews</a>
+        <a class="sidebar-link disabled">Settings</a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <a href="index.html" class="sidebar-footer-link">← Back to landing</a>
+        <a href="login.html" class="sidebar-footer-link">Manage auth</a>
+      </div>
+    </aside>
+
+    <!-- Main Area -->
+    <main class="main">
+      <header class="main-header">
+        <div>
+          <h1>AI Hiring Assistant</h1>
+          <p class="main-subtitle">
+            Paste a job description, upload resumes, and see ranked candidates.
+          </p>
+        </div>
+        <div class="main-status">
+          <span id="dash-candidate-count">0 candidates loaded</span>
+          <span class="dot-separator">•</span>
+          <span class="pill pill-green">Ready to match</span>
+        </div>
+      </header>
+
+      <section class="dashboard-grid">
+        <!-- JD Card -->
+        <div class="card card-large">
+          <h2>Job description</h2>
+          <textarea id="job-description" class="input-area" placeholder="Paste or type the job description here..."></textarea>
+          <div class="jd-footer">
+            <span id="jd-word-count">0 words</span>
+            <div class="jd-actions">
+              <button id="btn-analyze" class="btn-primary">Analyze</button>
+              <button id="btn-clear-jd" class="btn-secondary">Clear</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right column top: ranking + interview (placeholder) -->
+        <div class="card column-card">
+          <div class="card-header-row">
+            <h3>Candidate ranking</h3>
+            <button id="btn-sort-score" class="btn-chip">Sort by score</button>
+          </div>
+          <div id="ranking-summary" class="ranking-summary">
+            No candidates yet. Run a match to see leaderboard.
+          </div>
+        </div>
+
+        <div class="card column-card">
+          <div class="card-header-row">
+            <h3>Export</h3>
+          </div>
+          <p class="small-text">
+            Download or copy a summary of the latest results for your report.
+          </p>
+          <div class="export-buttons">
+            <button id="btn-download-json" class="btn-green">Download JSON</button>
+            <button id="btn-copy-summary" class="btn-secondary">Copy summary</button>
+          </div>
+          <p id="export-msg" class="msg"></p>
+        </div>
+
+        <!-- Resumes upload card -->
+        <div class="card card-upload">
+          <h2>Upload resumes (drag & drop or select)</h2>
+          <p class="small-text">Supports multiple PDF/DOCX files.</p>
+
+          <label class="upload-box" id="upload-box">
+            <span>Click here or drop files</span>
+            <input id="resumes" type="file" multiple class="file-input" />
+          </label>
+
+          <div id="file-list" class="file-list"></div>
+
+          <button id="btn-parse" class="btn-primary parse-btn">Parse & Match Resumes</button>
+          <p id="parse-msg" class="msg"></p>
+        </div>
+
+        <!-- Leaderboard / results -->
+        <div class="card card-large">
+          <h2>Leaderboard</h2>
+          <div id="results-empty" class="small-text">No results yet. Upload resumes and click “Parse & Match Resumes”.</div>
+          <div id="results-container" class="leaderboard"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
