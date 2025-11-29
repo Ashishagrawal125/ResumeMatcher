@@ -11,13 +11,11 @@ from sqlmodel import Session
 from typing import List, Optional
 import os
 
-from ..database import get_session
-from ..models import Resume
-from ..utils.config import settings
-from ..resume_parser_service import parser as resume_parser
-from ..resume_parser_service import matcher as resume_matcher
-from ..resume_parser_service import email_sender
-
+from backend.database import get_session
+from backend.models import Resume
+from backend.utils.config import settings
+from backend.resume_parser_service import parser as resume_parser
+from backend.resume_parser_service import matcher as resume_matcher
 
 router = APIRouter(prefix="/resumes", tags=["resumes"])
 
@@ -25,9 +23,9 @@ router = APIRouter(prefix="/resumes", tags=["resumes"])
 @router.post("/upload", summary="Upload JD + multiple resumes (NO AUTH – DEMO MODE)")
 async def upload_resumes(
     background_tasks: BackgroundTasks,
-    resumes: List[UploadFile] = File(...),              # ⬅ FRONTEND sends resumes[]
-    job_description: Optional[str] = Form(None),        # ⬅ FRONTEND sends job_description
-    jd_file: Optional[UploadFile] = File(None),         # optional JD file
+    resumes: List[UploadFile] = File(...),
+    job_description: Optional[str] = Form(None),
+    jd_file: Optional[UploadFile] = File(None),
     session: Session = Depends(get_session),
 ):
     """
@@ -39,7 +37,6 @@ async def upload_resumes(
     - Saves records to DB
     """
 
-    # Ensure upload directory exists
     os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
 
     # -----------------------------
@@ -57,13 +54,12 @@ async def upload_resumes(
     if not job_description:
         raise HTTPException(400, "Unable to extract job description")
 
-    # Extract JD keywords
     jd_tokens = set(resume_matcher.extract_tokens(job_description))
     if not jd_tokens:
         raise HTTPException(400, "No keywords found in the JD")
 
     # -----------------------------
-    # 2. PROCESS EACH RESUME
+    # 2. PROCESS RESUMES
     # -----------------------------
     results = []
 
@@ -71,27 +67,20 @@ async def upload_resumes(
         fname = upload.filename.replace(" ", "_")
         dest_path = os.path.join(settings.UPLOAD_DIR, fname)
 
-        # Save file
         resume_parser.save_upload_file(upload, dest_path)
-
-        # Parse resume text
         text = resume_parser.parse_resume(dest_path, fname)
 
-        # Extract email
         import re
         m = re.search(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}", text)
         email = m.group(0) if m else None
 
-        # Extract name (first non-empty line)
         first_lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
         name = first_lines[0][:120] if first_lines else None
 
-        # Token match score
         resume_tokens = set(resume_matcher.extract_tokens(text))
         matches = resume_tokens.intersection(jd_tokens)
         score = len(matches) / len(jd_tokens)
 
-        # Save DB record
         record = Resume(
             filename=fname,
             filepath=dest_path,
@@ -105,24 +94,20 @@ async def upload_resumes(
         session.commit()
         session.refresh(record)
 
-        # Send email based on threshold
-        selected = score >= 0.3
-        email_sender.queue_result_email(background_tasks, email, selected, "Uploaded JD")
+        # EMAIL DISABLED (important for Render deployment)
+        # email_sender.queue_result_email(background_tasks, email, selected, "Uploaded JD")
 
         results.append({
             "filename": fname,
             "email": email,
             "name": name,
             "score": round(score, 2),
-            "selected": selected
+            "selected": score >= 0.3
         })
 
-    # -----------------------------
-    # RETURN RESPONSE
-    # -----------------------------
     return {
         "jd_summary": (
-            job_description[:300] + "..." 
+            job_description[:300] + "..."
             if len(job_description) > 300 else job_description
         ),
         "total_resumes": len(results),
