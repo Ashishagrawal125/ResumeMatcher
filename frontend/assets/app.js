@@ -1,5 +1,6 @@
 // Adjust this if your backend URL changes
-const API_BASE = "http://127.0.0.1:8000";
+// const API_BASE = "http://127.0.0.1:8000";
+const API_BASE = "https://resumematcher-3-8mfr.onrender.com";
 
 /* ========== AUTH: SIGNUP ========== */
 const signupBtn = document.getElementById("btn-signup");

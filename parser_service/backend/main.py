@@ -1,10 +1,12 @@
 import os
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from .database import init_db
-from .utils.config import settings
-from .auth import routes as auth_routes
-from .routers import resumes as resume_routes
+
+from backend.database import init_db
+from backend.utils.config import settings
+from backend.auth import routes as auth_routes
+from backend.routers import resumes as resume_routes
+
 # backend/main.py
 # from backend.database import init_db
 # from backend.utils.config import settings
